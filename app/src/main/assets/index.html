@@ -1,0 +1,745 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0, viewport-fit=cover">
+  <meta name="theme-color" id="themeColorMeta" content="#f3ede0">
+  <meta name="mobile-web-app-capable" content="yes">
+  <title>Vocab - Minna no Nihongo</title>
+  <link rel="preconnect" href="https://fonts.googleapis.com">
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+  <link href="https://fonts.googleapis.com/css2?family=Shippori+Mincho:wght@500;700&family=Noto+Sans+Bengali:wght@400;600&family=IBM+Plex+Sans:wght@400;500;600&family=IBM+Plex+Mono:wght@400;500&display=swap" rel="stylesheet">
+  <style>
+    :root{
+      --paper: #f3ede0;
+      --paper-deep: #ece3d0;
+      --card-bg: #fffdf8;
+      --ink: #262220;
+      --ink-soft: #5c5650;
+      --ai: #23406b;        /* ai-iro indigo */
+      --ai-deep: #172d4d;
+      --ai-tint: #dfe6ef;
+      --hanko: #a63328;     /* stamp red */
+      --hanko-tint: #f3ddd8;
+      --sprout: #3f7d52;    /* "got it" green */
+      --sprout-tint: #dcece0;
+      --line: #cdc2a8;
+      --focus: #b0562a;
+      --grid-line: rgba(35,64,107,0.09);
+      --shadow: rgba(23,45,77,0.35);
+    }
+    html[data-theme="dark"]{
+      --paper: #171b23;
+      --paper-deep: #1e2430;
+      --card-bg: #1b2130;
+      --ink: #ece6d8;
+      --ink-soft: #a29c8c;
+      --ai: #7fa0d1;
+      --ai-deep: #b7cbeb;
+      --ai-tint: #26314a;
+      --hanko: #e2685a;
+      --hanko-tint: #3a2320;
+      --sprout: #6cb98a;
+      --sprout-tint: #1f3327;
+      --line: #333a48;
+      --focus: #e2865a;
+      --grid-line: rgba(127,160,209,0.08);
+      --shadow: rgba(0,0,0,0.5);
+    }
+
+    --font-display-stack: 'Shippori Mincho','Hiragino Mincho ProN','Yu Mincho','Noto Serif JP',serif;
+
+    *{ box-sizing:border-box; }
+    html,body{ height:100%; }
+    body{
+      margin:0;
+      background:
+        repeating-linear-gradient(180deg, transparent 0 39px, var(--grid-line) 39px 40px),
+        var(--paper);
+      color:var(--ink);
+      font-family:'IBM Plex Sans', -apple-system, 'Segoe UI', Roboto, Arial, sans-serif;
+      -webkit-font-smoothing:antialiased;
+      transition:background .2s, color .2s;
+    }
+    ::selection{ background:var(--ai-tint); }
+    *:focus-visible{ outline:2px solid var(--focus); outline-offset:2px; }
+    @media (prefers-reduced-motion: reduce){ *{ animation:none !important; transition:none !important; } }
+
+    #app{ max-width:1080px; margin:0 auto; padding:28px 20px 60px; }
+
+    header.top{ display:flex; align-items:baseline; gap:14px; margin-bottom:6px; flex-wrap:wrap; }
+    header.top h1{
+      font-family:'Shippori Mincho','Hiragino Mincho ProN','Yu Mincho','Noto Serif JP',serif;
+      font-weight:700; font-size:30px; margin:0; color:var(--ai-deep); letter-spacing:0.02em;
+    }
+    header.top .sub{ font-size:13px; color:var(--ink-soft); font-family:'IBM Plex Mono','SFMono-Regular',Consolas,monospace; }
+    .theme-toggle{
+      margin-left:auto; display:flex; align-items:center; gap:8px; font-size:12.5px; color:var(--ink-soft);
+      cursor:pointer; user-select:none; padding:6px 10px; border:1px solid var(--line); border-radius:99px;
+      background:var(--paper-deep);
+    }
+
+    .brush{
+      height:3px; margin:10px 0 20px; border-radius:2px; opacity:0.85;
+      background: linear-gradient(90deg, var(--ai) 0%, var(--ai) 55%, var(--ai-deep) 100%);
+      -webkit-mask-image: linear-gradient(90deg, black 0%, black 92%, transparent 100%);
+              mask-image: linear-gradient(90deg, black 0%, black 92%, transparent 100%);
+    }
+
+    .toolbar{
+      display:flex; flex-wrap:wrap; gap:10px 14px; align-items:center;
+      background:var(--paper-deep); border:1px solid var(--line); border-radius:10px;
+      padding:12px 14px; margin-bottom:18px;
+    }
+    .field{ display:flex; flex-direction:column; gap:4px; }
+    .field label{ font-size:11px; text-transform:uppercase; letter-spacing:0.08em; color:var(--ink-soft); }
+    select, input[type=text]{
+      font-family:inherit; font-size:14px; padding:7px 10px; border-radius:7px;
+      border:1px solid var(--line); background:var(--card-bg); color:var(--ink); min-width:120px;
+    }
+    #searchField{ flex:1; min-width:180px; }
+    #searchInput{ width:100%; }
+
+    .btn{
+      font-family:'IBM Plex Sans', sans-serif; font-size:13.5px; font-weight:500;
+      padding:8px 14px; border-radius:7px; border:1px solid var(--ai);
+      background:var(--ai); color:#fdfaf2; cursor:pointer; white-space:nowrap;
+    }
+    html[data-theme="dark"] .btn{ color:#12151d; }
+    .btn:hover{ filter:brightness(1.08); }
+    .btn.ghost{ background:transparent; color:var(--ai-deep); }
+    .btn.ghost:hover{ background:var(--ai-tint); }
+    .btn.stamp{ background:var(--hanko); border-color:var(--hanko); }
+    .btn.sprout{ background:var(--sprout); border-color:var(--sprout); }
+    .btn:disabled{ opacity:0.4; cursor:not-allowed; }
+    input[type=file]{ display:none; }
+
+    .switch-row{ display:flex; align-items:center; gap:8px; font-size:13px; color:var(--ink-soft); user-select:none; cursor:pointer; }
+    .switch{ width:34px; height:19px; border-radius:99px; background:var(--line); position:relative; transition:background .15s; flex:none; }
+    .switch::after{ content:''; position:absolute; top:2px; left:2px; width:15px; height:15px; border-radius:50%; background:var(--card-bg); transition:left .15s; }
+    .switch-row.on .switch{ background:var(--ai); }
+    .switch-row.on .switch::after{ left:17px; }
+
+    .tabs{ display:flex; gap:2px; margin-bottom:14px; border-bottom:1px solid var(--line); }
+    .tab{
+      padding:9px 18px; cursor:pointer; font-size:14px; font-weight:500; color:var(--ink-soft);
+      border-bottom:2px solid transparent; margin-bottom:-1px;
+    }
+    .tab.active{ color:var(--ai-deep); border-bottom-color:var(--hanko); }
+
+    .panel{ display:none; }
+    .panel.active{ display:block; }
+
+    .empty{ padding:50px 20px; text-align:center; color:var(--ink-soft); font-size:14px; }
+    .empty b{ color:var(--ai-deep); }
+
+    .table-wrap{ overflow-x:auto; border:1px solid var(--line); border-radius:10px; background:var(--card-bg); }
+    table{ width:100%; border-collapse:collapse; font-size:13.5px; }
+    thead th{
+      text-align:left; font-size:11px; text-transform:uppercase; letter-spacing:0.06em;
+      color:var(--ink-soft); padding:10px 12px; border-bottom:1px solid var(--line);
+      background:var(--paper-deep); position:sticky; top:0;
+    }
+    tbody td{ padding:9px 12px; border-bottom:1px solid var(--grid-line); vertical-align:top; }
+    tbody tr:hover{ background:var(--ai-tint); }
+    td.kanji{ font-family:'Shippori Mincho','Hiragino Mincho ProN','Yu Mincho',serif; font-size:17px; }
+    td.romaji{ font-family:'IBM Plex Mono','SFMono-Regular',Consolas,monospace; color:var(--ink-soft); }
+    td.meaning[lang=bn]{ font-family:'Noto Sans Bengali','Hind Siliguri','Nirmala UI',sans-serif; }
+    .known-mark{ color:var(--sprout); font-weight:700; }
+    .box-pill{
+      font-family:'IBM Plex Mono',monospace; font-size:10.5px; padding:2px 6px; border-radius:99px;
+      background:var(--ai-tint); color:var(--ai-deep); display:inline-block;
+    }
+    .box-pill.due{ background:var(--hanko-tint); color:var(--hanko); }
+    .box-pill.mastered{ background:var(--sprout-tint); color:var(--sprout); }
+
+    .fc-controls-top{ display:flex; flex-wrap:wrap; gap:12px 20px; align-items:center; margin-bottom:10px; }
+    .progress-tag{
+      font-family:'IBM Plex Mono', monospace; font-size:12.5px;
+      background:var(--ai-tint); color:var(--ai-deep); padding:5px 10px; border-radius:99px;
+    }
+    .progress-tag.due{ background:var(--hanko-tint); color:var(--hanko); }
+    .stat-row{ display:flex; gap:8px; margin-left:auto; flex-wrap:wrap; }
+
+    .srs-note{
+      font-size:12.5px; color:var(--ink-soft); background:var(--paper-deep); border:1px solid var(--line);
+      border-radius:8px; padding:8px 12px; margin-bottom:14px; line-height:1.5;
+    }
+    .srs-note b{ color:var(--ai-deep); }
+
+    .card-stage{ display:flex; justify-content:center; padding:6px 0 20px; }
+    .card{
+      width:100%; max-width:460px; min-height:300px; border-radius:14px; position:relative;
+      background:
+        repeating-linear-gradient(90deg, transparent 0 45px, var(--grid-line) 45px 46px),
+        repeating-linear-gradient(180deg, transparent 0 45px, var(--grid-line) 45px 46px),
+        var(--card-bg);
+      border:1px solid var(--line);
+      box-shadow: 0 1px 0 var(--line), 0 8px 22px -12px var(--shadow);
+      padding:26px 24px 22px;
+      display:flex; flex-direction:column; align-items:center; justify-content:center;
+      cursor:pointer; text-align:center;
+    }
+    .card .lesson-tag{
+      position:absolute; top:14px; left:16px; font-family:'IBM Plex Mono', monospace;
+      font-size:11.5px; color:var(--ink-soft); background:var(--paper-deep); padding:3px 8px; border-radius:99px;
+    }
+    .card .box-tag{
+      position:absolute; top:14px; left:50%; transform:translateX(-50%);
+      font-family:'IBM Plex Mono', monospace; font-size:11px; color:var(--ink-soft);
+    }
+    .stamp-mark{
+      position:absolute; top:12px; right:14px; width:46px; height:46px; border-radius:50%;
+      border:2.5px solid var(--sprout); color:var(--sprout); display:none; align-items:center; justify-content:center;
+      font-family:'Shippori Mincho', serif; font-size:16px; font-weight:700; transform:rotate(-9deg); opacity:0.9;
+    }
+    .card.mastered .stamp-mark{ display:flex; }
+    .card .face-primary{
+      font-family:'Shippori Mincho','Hiragino Mincho ProN','Yu Mincho',serif;
+      font-size:44px; font-weight:700; color:var(--ink); line-height:1.25; word-break:break-word;
+    }
+    .card .face-sub{ margin-top:10px; font-family:'IBM Plex Mono', monospace; font-size:15px; color:var(--ink-soft); }
+    .card .face-meaning{ font-family:'Noto Sans Bengali','IBM Plex Sans',sans-serif; font-size:24px; color:var(--ai-deep); line-height:1.5; }
+    .card .hint{ position:absolute; bottom:12px; font-size:11px; color:var(--ink-soft); opacity:0.7; }
+
+    .fc-nav{ display:flex; justify-content:center; gap:10px; flex-wrap:wrap; }
+    .grade-row{ display:flex; justify-content:center; gap:10px; flex-wrap:wrap; margin-top:12px; }
+    .grade-row .btn{ min-width:150px; }
+
+    footer.note{ margin-top:26px; font-size:12px; color:var(--ink-soft); text-align:center; }
+    footer.note code{ background:var(--paper-deep); padding:1px 5px; border-radius:4px; word-break:break-all; }
+
+    @media (hover: none){
+      .tab, .btn, .switch-row, .theme-toggle{ -webkit-tap-highlight-color: transparent; }
+    }
+    @media (max-width: 640px){
+      #app{ padding:16px 12px 48px; }
+      header.top{ gap:8px; }
+      header.top h1{ font-size:24px; }
+      header.top .sub{ font-size:11px; flex-basis:100%; order:3; }
+      .theme-toggle{ margin-left:0; order:2; }
+
+      .toolbar{ flex-direction:column; align-items:stretch; padding:12px; }
+      .toolbar .field{ width:100%; }
+      .toolbar select, .toolbar input[type=text]{ width:100%; font-size:16px; min-width:0; }
+      #searchField{ order:1; }
+      .toolbar > .btn{ width:100%; min-height:44px; }
+
+      .tabs{ overflow-x:auto; }
+      .tab{ padding:10px 14px; min-height:44px; display:flex; align-items:center; }
+
+      .table-wrap{ -webkit-overflow-scrolling:touch; }
+      table{ font-size:12.5px; }
+      thead th, tbody td{ padding:8px; }
+
+      .fc-controls-top{ gap:10px; }
+      .stat-row{ width:100%; margin-left:0; }
+      .switch-row{ min-height:32px; }
+
+      .card{ min-height:240px; padding:22px 16px 18px; max-width:100%; }
+      .card .face-primary{ font-size:32px; }
+      .card .face-meaning{ font-size:19px; }
+      .card .lesson-tag, .card .box-tag{ font-size:10.5px; }
+
+      .fc-nav{ gap:8px; }
+      .fc-nav .btn{ flex:1 1 auto; min-height:44px; }
+      #counterTag{ width:100%; text-align:center; order:5; }
+
+      .grade-row{ flex-direction:column; }
+      .grade-row .btn{ width:100%; min-height:48px; }
+
+      .srs-note{ font-size:12px; }
+    }
+    @media (max-width: 380px){
+      header.top h1{ font-size:21px; }
+      .card .face-primary{ font-size:27px; }
+    }
+  </style>
+</head>
+<body>
+<div id="app">
+
+  <header class="top">
+    <h1>語彙 <span style="color:var(--hanko)">•</span> Vocab</h1>
+    <div class="sub">Minna no Nihongo • বাংলা</div>
+    <div class="theme-toggle" id="themeToggle"><span id="themeIcon">🌙</span><span id="themeLabel">Dark</span></div>
+  </header>
+  <div class="brush"></div>
+
+  <div class="toolbar">
+    <div class="field">
+      <label for="lessonSelect">Lesson</label>
+      <select id="lessonSelect"><option>All Lessons</option></select>
+    </div>
+    <div class="field">
+      <label for="langSelect">Meaning</label>
+      <select id="langSelect"><option value="bn">বাংলা</option></select>
+    </div>
+    <div class="field" id="searchField">
+      <label for="searchInput">Search</label>
+      <input type="text" id="searchInput" placeholder="kanji, kana, romaji, meaning...">
+    </div>
+    <button class="btn" id="loadBtn">Load JSON</button>
+    <button class="btn ghost" id="clearBtn">Clear saved data</button>
+    <input type="file" id="fileInput" accept=".json,application/json">
+  </div>
+
+  <div class="tabs">
+    <div class="tab active" data-panel="grid">Table</div>
+    <div class="tab" data-panel="flash">Study</div>
+  </div>
+
+  <div class="panel active" id="panel-grid">
+    <div id="gridEmpty" class="empty">No vocabulary loaded yet. Click <b>Load JSON</b> to pick your vocab file.</div>
+    <div class="table-wrap" id="tableWrap" style="display:none;">
+      <table>
+        <thead><tr id="tableHead"></tr></thead>
+        <tbody id="tableBody"></tbody>
+      </table>
+    </div>
+  </div>
+
+  <div class="panel" id="panel-flash">
+    <div class="srs-note">
+      <b>Spaced repetition is on.</b> Rate each card honestly after flipping it — "Still learning" brings it back soon, "Got it" pushes it further out (1 → 3 → 7 → 14 → 30 → 90 days).
+    </div>
+    <div class="fc-controls-top">
+      <div class="switch-row" id="shuffleRow"><div class="switch"></div>Shuffle</div>
+      <div class="switch-row on" id="dueRow"><div class="switch"></div>Due cards only</div>
+      <div class="stat-row">
+        <div class="progress-tag due" id="dueTag">Due: 0</div>
+        <div class="progress-tag" id="masteredTag">Mastered: 0 / 0</div>
+      </div>
+    </div>
+
+    <div class="card-stage">
+      <div class="card" id="flashCard">
+        <div class="lesson-tag" id="cardLesson">Lesson ?</div>
+        <div class="box-tag" id="cardBox"></div>
+        <div class="stamp-mark" id="cardStamp">済</div>
+        <div class="face-primary" id="cardPrimary">No data</div>
+        <div class="face-sub" id="cardSub"></div>
+        <div class="hint" id="cardHint">click or press space to flip</div>
+      </div>
+    </div>
+
+    <div class="fc-nav">
+      <button class="btn ghost" id="prevBtn">← Previous</button>
+      <button class="btn ghost" id="flipBtn">↻ Flip (Space)</button>
+      <button class="btn ghost" id="nextBtn">Next →</button>
+      <span id="counterTag" style="align-self:center; font-family:'IBM Plex Mono',monospace; font-size:13px; color:var(--ink-soft);">0 / 0</span>
+    </div>
+
+    <div class="grade-row" id="gradeRow" style="display:none;">
+      <button class="btn stamp" id="forgotBtn">✕ Still learning (1)</button>
+      <button class="btn sprout" id="gotItBtn">✓ Got it (2)</button>
+    </div>
+  </div>
+
+  <footer class="note">
+    <div id="statusNote" style="margin-bottom:6px;"></div>
+    Progress is saved automatically. Expected JSON shape: <code>{ languages, lessons, "lesson-01": [...] }</code>.
+  </footer>
+</div>
+
+<script>
+  (function(){
+    const INTERVAL_DAYS = [0, 1, 3, 7, 14, 30, 90];
+    const MASTERY_BOX = INTERVAL_DAYS.length - 1;
+    const DAY_MS = 24 * 60 * 60 * 1000;
+
+    const state = {
+      languages: {},
+      lessonMeta: [],
+      allWords: [],
+      gridWords: [],
+      activeWords: [],
+      fcIndex: 0,
+      flipped: false,
+      srs: {},
+      shuffle: false,
+      dueOnly: true,
+      meaningLang: 'bn',
+      theme: 'light'
+    };
+
+    const el = id => document.getElementById(id);
+    const lessonSelect = el('lessonSelect');
+    const langSelect = el('langSelect');
+    const searchInput = el('searchInput');
+    const fileInput = el('fileInput');
+
+    // Standard LocalStorage storage helpers for WebViews
+    async function storageGet(key){
+      try{ return localStorage.getItem(key); } catch(e){ return null; }
+    }
+    async function storageSet(key, value){
+      try{ localStorage.setItem(key, value); } catch(e){ /* ignore */ }
+    }
+    async function storageDelete(key){
+      try{ localStorage.removeItem(key); } catch(e){ /* ignore */ }
+    }
+
+    async function saveSrs(){
+      await storageSet('vocab-srs', JSON.stringify(state.srs));
+    }
+    async function loadSrs(){
+      const raw = await storageGet('vocab-srs');
+      if(raw){
+        try{ state.srs = JSON.parse(raw); } catch(e){ state.srs = {}; }
+      }
+    }
+    async function saveDataset(rawJsonText){
+      await storageSet('vocab-dataset', rawJsonText);
+    }
+
+    function srsFor(uid){
+      if(!state.srs[uid]) state.srs[uid] = { box: 0, due: Date.now() };
+      return state.srs[uid];
+    }
+    function isDue(uid){ return srsFor(uid).due <= Date.now(); }
+    function isMastered(uid){ return srsFor(uid).box >= MASTERY_BOX; }
+
+    function applyTheme(theme){
+      state.theme = theme;
+      document.documentElement.setAttribute('data-theme', theme);
+      el('themeIcon').textContent = theme === 'dark' ? '☀️' : '🌙';
+      el('themeLabel').textContent = theme === 'dark' ? 'Light' : 'Dark';
+      const meta = document.getElementById('themeColorMeta');
+      if(meta) meta.setAttribute('content', theme === 'dark' ? '#171b23' : '#f3ede0');
+    }
+    async function initTheme(){
+      const saved = await storageGet('vocab-theme');
+      if(saved){ applyTheme(saved); return; }
+      const prefersDark = window.matchMedia && window.matchMedia('(prefers-color-scheme: dark)').matches;
+      applyTheme(prefersDark ? 'dark' : 'light');
+    }
+    el('themeToggle').addEventListener('click', async () => {
+      const next = state.theme === 'dark' ? 'light' : 'dark';
+      applyTheme(next);
+      await storageSet('vocab-theme', next);
+    });
+
+    function parseDataset(data){
+      state.languages = data.languages || {en:'English', bn:'বাংলা'};
+      const langCodes = Object.keys(state.languages);
+      langSelect.innerHTML = langCodes.map(c => `<option value="${c}">${state.languages[c]}</option>`).join('');
+      if(!langCodes.includes(state.meaningLang)) state.meaningLang = langCodes[0];
+      langSelect.value = state.meaningLang;
+
+      state.lessonMeta = (data.lessons || []).slice().sort((a,b) => (a.id||0)-(b.id||0));
+      state.allWords = [];
+      for(const lesson of state.lessonMeta){
+        const items = data[lesson.key] || [];
+        for(const item of items){
+          const rawId = item.id || [lesson.id, null];
+          const lessonNum = rawId[0], wordNum = rawId[1];
+          state.allWords.push({
+            uid: `${lessonNum}-${wordNum}`,
+            lessonId: lesson.id,
+            kanji: item.kanji || '',
+            kana: item.kana || '',
+            romaji: item.romaji || '',
+            meanings: item.meaning || {}
+          });
+        }
+      }
+
+      lessonSelect.innerHTML = '<option>All Lessons</option>' +
+        state.lessonMeta.map(l => `<option>Lesson ${l.id}</option>`).join('');
+      lessonSelect.value = 'All Lessons';
+
+      filterData();
+    }
+
+    function meaningFor(w, lang){
+      lang = lang || state.meaningLang;
+      return w.meanings[lang] || w.meanings.en || '?';
+    }
+
+    function filterData(){
+      const selectedLesson = lessonSelect.value;
+      const query = searchInput.value.trim().toLowerCase();
+
+      let matches = state.allWords.filter(w => {
+        const lessonMatch = selectedLesson === 'All Lessons' || selectedLesson === `Lesson ${w.lessonId}`;
+        if(!lessonMatch) return false;
+        if(!query) return true;
+        const haystacks = [w.kanji, w.kana, w.romaji, ...Object.values(w.meanings)];
+        return haystacks.some(h => (h||'').toLowerCase().includes(query));
+      });
+
+      state.gridWords = matches;
+
+      let fcWords = matches;
+      if(state.dueOnly) fcWords = fcWords.filter(w => isDue(w.uid));
+      fcWords = fcWords.slice();
+      if(state.shuffle){
+        for(let i = fcWords.length - 1; i > 0; i--){
+          const j = Math.floor(Math.random() * (i+1));
+          [fcWords[i], fcWords[j]] = [fcWords[j], fcWords[i]];
+        }
+      } else {
+        fcWords.sort((a,b) => srsFor(a.uid).due - srsFor(b.uid).due);
+      }
+      state.activeWords = fcWords;
+      state.fcIndex = 0;
+
+      renderGrid();
+      renderFlashcard();
+      updateStats(matches);
+    }
+
+    function updateStats(scopeWords){
+      const total = scopeWords.length;
+      const mastered = scopeWords.filter(w => isMastered(w.uid)).length;
+      const due = scopeWords.filter(w => isDue(w.uid)).length;
+      el('dueTag').textContent = `Due: ${due}`;
+      el('masteredTag').textContent = `Mastered: ${mastered} / ${total}`;
+    }
+
+    function renderGrid(){
+      const head = el('tableHead');
+      const body = el('tableBody');
+      const meaningHeader = state.languages[state.meaningLang] || state.meaningLang;
+
+      if(state.allWords.length === 0){
+        el('gridEmpty').style.display = 'block';
+        el('tableWrap').style.display = 'none';
+        return;
+      }
+      el('gridEmpty').style.display = 'none';
+      el('tableWrap').style.display = 'block';
+
+      head.innerHTML = ['Lesson','Kanji','Kana','Romaji',`Meaning (${meaningHeader})`,'Progress']
+        .map(h => `<th>${h}</th>`).join('');
+
+      body.innerHTML = state.gridWords.map(w => {
+        const s = srsFor(w.uid);
+        const mastered = isMastered(w.uid);
+        const due = isDue(w.uid);
+        let pillClass = 'box-pill';
+        let pillText = `Box ${s.box}`;
+        if(mastered){ pillClass += ' mastered'; pillText = '✓ Mastered'; }
+        else if(due){ pillClass += ' due'; pillText = `Box ${s.box} • due`; }
+        return `<tr>
+          <td class="romaji">L${w.lessonId}</td>
+          <td class="kanji">${escapeHtml(w.kanji)}</td>
+          <td>${escapeHtml(w.kana)}</td>
+          <td class="romaji">${escapeHtml(w.romaji)}</td>
+          <td class="meaning" lang="${state.meaningLang}">${escapeHtml(meaningFor(w))}</td>
+          <td><span class="${pillClass}">${pillText}</span></td>
+        </tr>`;
+      }).join('');
+    }
+
+    function escapeHtml(s){
+      return String(s).replace(/[&<>"']/g, c => ({'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;',"'":'&#39;'}[c]));
+    }
+
+    function renderFlashcard(){
+      state.flipped = false;
+      el('gradeRow').style.display = 'none';
+      if(state.activeWords.length === 0){
+        el('counterTag').textContent = '0 / 0';
+        el('cardLesson').textContent = 'Lesson ?';
+        el('cardBox').textContent = '';
+        el('cardPrimary').textContent = state.allWords.length ? 'Nothing due right now 🎉' : 'No data';
+        el('cardPrimary').className = 'face-primary';
+        el('cardSub').textContent = '';
+        el('flashCard').classList.remove('mastered');
+        el('cardHint').textContent = state.allWords.length ? 'Toggle "Due cards only" off to browse everything.' : '';
+        return;
+      }
+      el('counterTag').textContent = `${state.fcIndex+1} / ${state.activeWords.length}`;
+      updateCardContent();
+    }
+
+    function updateCardContent(){
+      if(state.activeWords.length === 0) return;
+      const w = state.activeWords[state.fcIndex];
+      const s = srsFor(w.uid);
+      el('cardLesson').textContent = `Lesson ${w.lessonId}`;
+      el('cardBox').textContent = isMastered(w.uid) ? '' : `box ${s.box} of ${MASTERY_BOX}`;
+      el('flashCard').classList.toggle('mastered', isMastered(w.uid));
+
+      if(!state.flipped){
+        const primary = w.kanji || w.kana;
+        const sub = w.kanji ? `${w.kana} (${w.romaji})` : w.romaji;
+        el('cardPrimary').className = 'face-primary';
+        el('cardPrimary').textContent = primary || '?';
+        el('cardPrimary').setAttribute('lang','ja');
+        el('cardSub').textContent = sub;
+        el('cardHint').textContent = 'click or press space to flip';
+        el('gradeRow').style.display = 'none';
+      } else {
+        el('cardPrimary').className = 'face-meaning';
+        el('cardPrimary').textContent = meaningFor(w);
+        el('cardPrimary').setAttribute('lang', state.meaningLang);
+        el('cardSub').textContent = '';
+        el('cardHint').textContent = 'rate yourself below, or press 1 / 2';
+        el('gradeRow').style.display = 'flex';
+      }
+    }
+
+    function flipCard(){
+      if(state.activeWords.length === 0) return;
+      state.flipped = !state.flipped;
+      updateCardContent();
+    }
+
+    function navCard(step){
+      if(state.activeWords.length === 0) return;
+      const total = state.activeWords.length;
+      state.fcIndex = (state.fcIndex + step + total) % total;
+      renderFlashcard();
+    }
+
+    function gradeCard(remembered){
+      if(state.activeWords.length === 0) return;
+      const w = state.activeWords[state.fcIndex];
+      const s = srsFor(w.uid);
+      if(remembered){
+        s.box = Math.min(s.box + 1, MASTERY_BOX);
+      } else {
+        s.box = Math.max(s.box - 2, 0);
+      }
+      s.due = Date.now() + INTERVAL_DAYS[s.box] * DAY_MS;
+      saveSrs();
+
+      const stillInQueue = !state.dueOnly || isDue(w.uid);
+      if(!stillInQueue){
+        state.activeWords.splice(state.fcIndex, 1);
+        if(state.fcIndex >= state.activeWords.length) state.fcIndex = 0;
+      } else if(state.activeWords.length > 1){
+        state.fcIndex = (state.fcIndex + 1) % state.activeWords.length;
+      }
+      renderFlashcard();
+      updateStats(state.gridWords);
+      renderGrid();
+    }
+
+    document.querySelectorAll('.tab').forEach(tab => {
+      tab.addEventListener('click', () => {
+        document.querySelectorAll('.tab').forEach(t => t.classList.remove('active'));
+        document.querySelectorAll('.panel').forEach(p => p.classList.remove('active'));
+        tab.classList.add('active');
+        el('panel-' + tab.dataset.panel).classList.add('active');
+        if(tab.dataset.panel === 'flash') filterData();
+      });
+    });
+
+    lessonSelect.addEventListener('change', filterData);
+    searchInput.addEventListener('input', filterData);
+    langSelect.addEventListener('change', () => {
+      state.meaningLang = langSelect.value;
+      renderGrid();
+      updateCardContent();
+    });
+
+    el('loadBtn').addEventListener('click', () => fileInput.click());
+    fileInput.addEventListener('change', async (e) => {
+      const file = e.target.files[0];
+      if(!file) return;
+      const text = await file.text();
+      try{
+        const data = JSON.parse(text);
+        parseDataset(data);
+        await saveDataset(text);
+        filterData();
+      }catch(err){
+        alert('Could not read that file as vocabulary JSON.\n' + err.message);
+      }
+      fileInput.value = '';
+    });
+
+    el('clearBtn').addEventListener('click', async () => {
+      if(!confirm('Clear the saved vocabulary and study progress?')) return;
+      await storageDelete('vocab-dataset');
+      await storageDelete('vocab-srs');
+      state.allWords = []; state.gridWords = []; state.activeWords = []; state.srs = {};
+      lessonSelect.innerHTML = '<option>All Lessons</option>';
+      renderGrid(); renderFlashcard(); updateStats([]);
+    });
+
+    function setSwitch(row, on){ row.classList.toggle('on', on); }
+    el('shuffleRow').addEventListener('click', () => {
+      state.shuffle = !state.shuffle;
+      setSwitch(el('shuffleRow'), state.shuffle);
+      filterData();
+    });
+    el('dueRow').addEventListener('click', () => {
+      state.dueOnly = !state.dueOnly;
+      setSwitch(el('dueRow'), state.dueOnly);
+      filterData();
+    });
+    setSwitch(el('dueRow'), state.dueOnly);
+
+    el('flashCard').addEventListener('click', flipCard);
+    el('flipBtn').addEventListener('click', flipCard);
+    el('prevBtn').addEventListener('click', () => navCard(-1));
+    el('nextBtn').addEventListener('click', () => navCard(1));
+    el('forgotBtn').addEventListener('click', () => gradeCard(false));
+    el('gotItBtn').addEventListener('click', () => gradeCard(true));
+
+    document.addEventListener('keydown', (e) => {
+      const tag = document.activeElement && document.activeElement.tagName;
+      if(tag === 'INPUT' || tag === 'SELECT' || tag === 'TEXTAREA') return;
+      if(!el('panel-flash').classList.contains('active')) return;
+      if(e.key === 'ArrowLeft'){ navCard(-1); }
+      else if(e.key === 'ArrowRight'){ navCard(1); }
+      else if(e.key === ' ' || e.key === 'Enter'){ e.preventDefault(); flipCard(); }
+      else if(e.key === '1'){ if(state.flipped) gradeCard(false); }
+      else if(e.key === '2'){ if(state.flipped) gradeCard(true); }
+    });
+
+    const AUTO_LOAD_FILENAME = 'minna_nihongo_bangla.json';
+
+    async function tryAutoFetch(){
+      try{
+        const res = await fetch(AUTO_LOAD_FILENAME, { cache: 'no-store' });
+        if(!res.ok) return false;
+        const text = await res.text();
+        const data = JSON.parse(text);
+        parseDataset(data);
+        await saveDataset(text);
+        setStatus(`Auto-loaded vocabulary asset successfully.`, false);
+        return true;
+      }catch(e){
+        return false;
+      }
+    }
+
+    function setStatus(msg, isWarning){
+      const s = el('statusNote');
+      s.textContent = msg;
+      s.style.color = isWarning ? 'var(--hanko)' : 'var(--ink-soft)';
+    }
+
+    (async function init(){
+      await initTheme();
+      await loadSrs();
+      const autoLoaded = await tryAutoFetch();
+
+      if(!autoLoaded){
+        const savedDataset = await storageGet('vocab-dataset');
+        if(savedDataset){
+          try{
+            const data = JSON.parse(savedDataset);
+            parseDataset(data);
+            setStatus('Loaded vocabulary from app storage.', false);
+          }catch(e){
+            renderGrid();
+            renderFlashcard();
+          }
+        } else {
+          renderGrid();
+          renderFlashcard();
+          setStatus('Ready. Click "Load JSON" to upload your vocabulary file.', false);
+        }
+      }
+    })();
+  })();
+</script>
+</body>
+</html>
