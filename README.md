@@ -1,6 +1,15 @@
 # 🇯🇵 Minna no Nihongo - Japanese Vocabulary Android App
 
 An interactive, offline-first Android application designed to help Bangladeshi learners study Japanese vocabulary from the **Minna no Nihongo** series with Bangla and English translations. Built with Android Studio using WebView, HTML5, JavaScript, and custom JSON datasets.
+<p align="center">
+  <img src="Screenshot_20260819-203840_jap-ban-vocab.png" alt="App Banner" width="100%" />
+</p>
+<p align="center">
+  <img src="Screenshot_20260819-203850_jap-ban-vocab.png" alt="App Banner" width="100%" />
+</p>
+<p align="center">
+  <img src="Screenshot_20260819-203857_jap-ban-vocab.png" alt="App Banner" width="100%" />
+</p>
 
 ---
 
